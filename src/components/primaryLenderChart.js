@@ -26,8 +26,8 @@ import {
     return(
 			<div>
 				<LineChart
-					width={500}
-					height={400}
+					width={375}
+					height={375}
 					data={data}
 					margin={{
 						top: 50,
@@ -37,7 +37,7 @@ import {
 					}}
 				>
 					<CartesianGrid strokeDasharray="3 3" />
-					<XAxis dataKey="inv_time_periods" />
+					<XAxis dataKey="inv_time_periods_yrs" />
 					<YAxis />
 					<Tooltip />
 					<Line

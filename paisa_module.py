@@ -1,31 +1,263 @@
 # Functions module for Paisa simulation
 import numpy as np
 import numpy_financial as npf
+import time
 
 
-def run_simulation(input_data_form):
+def api_run_simulation(input_data_form):
+    # Loan grade from the frontend form
+    # loan_grade = input_data_form["loan_grade"]
+    loan_grade = "ALL"
 
+    if loan_grade == "ALL":
+        # Run the code with all loan grades (A to D)
+        output_data_A = simulation_or_model(input_data_form, "A")
+        output_data_B = simulation_or_model(input_data_form, "B")
+        output_data_C = simulation_or_model(input_data_form, "C")
+        output_data_D = simulation_or_model(input_data_form, "D")
+
+        # Return the outputs
+        output_data = {}
+
+        output_data["output_data_A"] = output_data_A
+        output_data["output_data_B"] = output_data_B
+        output_data["output_data_C"] = output_data_C
+        output_data["output_data_D"] = output_data_D
+
+        return output_data
+    else:
+        # Run the code with the given loan grade (A, B, C, D, MIX)
+        output_data = simulation_or_model(input_data_form, loan_grade)
+
+        # Return the outputs
+        return output_data
+
+
+def simulation_or_model(input_data_form, loan_grade):
+    scenario_flag = input_data_form["scenario_flag"]
+    default_flag = input_data_form["default_flag"]
+
+    if scenario_flag == 1 or scenario_flag == 2 or scenario_flag == 3:
+        # Load the saved scenario results
+        output_data = load_simulation_results(scenario_flag, loan_grade)
+    elif scenario_flag == 4:
+        # Custom scenario
+        if default_flag == "auto":
+            # Load the saved simulation results
+            output_data = load_simulation_results(scenario_flag, loan_grade)
+        elif default_flag == "off":
+            # Run current and Paisa models for the given loan grade (with no defaults)
+            # No defaults case - Returns an array with all zeros
+            monthly_default_array = monthly_defaults_3yr()
+
+            current_output_data = current_model(
+                input_data_form, loan_grade, monthly_default_array
+            )
+
+            paisa_output_data = paisa_model(
+                input_data_form, loan_grade, monthly_default_array
+            )
+
+            # Output data dict
+            output_data = {}
+        elif default_flag == "custom":
+            # Run the Paisa model simulation for the given loan grade
+            # (generate random defaults with the given custom setting)
+            (
+                paisa_abs_return_mean,
+                paisa_abs_return_std,
+                paisa_llr_mean,
+                paisa_llr_std,
+                paisa_lrr_mean,
+                paisa_lrr_std,
+            ) = run_paisa_simulation(input_data_form, loan_grade, 10)
+
+            # Current platform model results
+            current_output_data = current_model(
+                input_data_form, loan_grade, monthly_defaults_3yr(loan_grade)
+            )
+
+            # Output data dict
+            output_data = {}
+
+            # Paisa outputs
+            output_data["paisa_abs_return_mean"] = paisa_abs_return_mean.tolist()
+            output_data["paisa_abs_return_std"] = paisa_abs_return_std.tolist()
+            output_data["paisa_llr_mean"] = paisa_llr_mean.tolist()
+            output_data["paisa_llr_std"] = paisa_llr_std.tolist()
+            output_data["paisa_lrr_mean"] = paisa_lrr_mean.tolist()
+            output_data["paisa_lrr_std"] = paisa_lrr_std.tolist()
+
+            # Current platform outputs
+            output_data["current_abs_return"] = current_output_data[
+                "current_abs_return"
+            ]
+            output_data["current_llr"] = current_output_data["current_llr"]
+            output_data["current_lrr"] = current_output_data["current_lrr"]
+
+    # Return the outputs
+    return output_data
+
+
+def load_simulation_results(scenario_flag, loan_grade):
+    # Return the saved simulation results for the given scenario and loan grade
+
+    if scenario_flag == 1:
+        # General scenario saved results
+        if loan_grade == "A":
+            output_data = None
+        elif loan_grade == "B":
+            output_data = None
+        elif loan_grade == "C":
+            output_data = None
+        elif loan_grade == "D":
+            output_data = None
+    elif scenario_flag == 2:
+        # Lender friendly scenario saved results
+        if loan_grade == "A":
+            output_data = None
+        elif loan_grade == "B":
+            output_data = None
+        elif loan_grade == "C":
+            output_data = None
+        elif loan_grade == "D":
+            output_data = None
+    elif scenario_flag == 3:
+        # Borrower friendly scenario saved results
+        if loan_grade == "A":
+            output_data = None
+        elif loan_grade == "B":
+            output_data = None
+        elif loan_grade == "C":
+            output_data = None
+        elif loan_grade == "D":
+            output_data = None
+    elif scenario_flag == 4:
+        # Custom scenario (Auto) saved results
+        if loan_grade == "A":
+            output_data = None
+        elif loan_grade == "B":
+            output_data = None
+        elif loan_grade == "C":
+            output_data = None
+        elif loan_grade == "D":
+            output_data = None
+
+    return output_data
+
+
+def run_paisa_simulation(input_data_form, loan_grade, num_samples=None):
+    # Inputs from the input form
+    inv_time_periods_yrs = input_data_form["inv_time_periods_yrs"]
+    default_deviate_percent = input_data_form["default_deviate_percent"]
+
+    # Number of simulation runs
+    if num_samples is None:
+        num_samples = 100
+
+    # Generate the defaults from the average defaults
+    # Mean vector
+    default_mean_array = monthly_defaults_3yr(loan_grade)
+    default_mean_array = default_mean_array[1:]
+    # default_mean_array = 1.25 * default_mean_array[1:]
+
+    # Covariance matrix
+    default_variance_array = ((default_deviate_percent / 100) * default_mean_array) ** 2
+    cov_default_mtx = default_variance_array * np.eye(36)
+
+    # Generate default arrays from the normal distribution
+    defaults_mtx = np.random.multivariate_normal(
+        default_mean_array, cov_default_mtx, num_samples
+    )
+
+    # Check for validity of generated default arrays
+    valid_idx = []
+    array_36_zeros = np.zeros(36)
+    for i in range(num_samples):
+        # defaults_array = z_scores * sigma_valid[i] + mu_valid[i]
+        defaults_array = defaults_mtx[i, :]
+
+        # Replace negative values with zeros
+        defaults_array = np.maximum(defaults_array, array_36_zeros)
+
+        # Check for validity (sum <= 1)
+        if np.sum(defaults_array) <= 1:
+            defaults_mtx[i, :] = defaults_array
+            valid_idx.append(i)
+
+    # Calculate Paisa KPIs for each default array
+    num_valid_samples = len(valid_idx)
+    num_inv_time_periods = len(inv_time_periods_yrs)
+
+    # Initialize the output matrices
+    paisa_abs_return_mtx = np.zeros((num_valid_samples, num_inv_time_periods))
+    paisa_llr_mtx = np.zeros((num_valid_samples, num_inv_time_periods))
+    paisa_lrr_mtx = np.zeros((num_valid_samples, num_inv_time_periods))
+
+    for i in range(num_valid_samples):
+        # Get the valid default array from the random defaults matrix
+        default_array = defaults_mtx[valid_idx[i], :]
+
+        # Insert the dummy element at the beginning
+        default_array = np.insert(default_array, 0, 999)
+
+        tic = time.perf_counter()
+        # Paisa model output with the current default array
+        paisa_output = paisa_model(input_data_form, loan_grade, default_array)
+        toc = time.perf_counter()
+
+        print(
+            f"Grade {loan_grade}: Run #{i+1} of {num_valid_samples} done. Time: {toc - tic:0.2f} seconds."
+        )
+
+        # Store the current output in output matrices
+        paisa_abs_return_mtx[i, :] = paisa_output["paisa_abs_return"]
+        paisa_llr_mtx[i, :] = paisa_output["paisa_llr"]
+        paisa_lrr_mtx[i, :] = paisa_output["paisa_lrr"]
+
+    # Compute the mean of KPIs
+    paisa_abs_return_mean = np.mean(paisa_abs_return_mtx, axis=0)
+    paisa_llr_mean = np.mean(paisa_llr_mtx, axis=0)
+    paisa_lrr_mean = np.mean(paisa_lrr_mtx, axis=0)
+
+    # Compute the standard deviation of KPIs
+    paisa_abs_return_std = np.std(paisa_abs_return_mtx, axis=0)
+    paisa_llr_std = np.std(paisa_llr_mtx, axis=0)
+    paisa_lrr_std = np.std(paisa_lrr_mtx, axis=0)
+
+    # Return the outputs
+    return (
+        paisa_abs_return_mean,
+        paisa_abs_return_std,
+        paisa_llr_mean,
+        paisa_llr_std,
+        paisa_lrr_mean,
+        paisa_lrr_std,
+    )
+
+
+def paisa_model(input_data_form, loan_grade, monthly_default_array):
     # Inputs from the frontend form
     # Primary inputs
-    loan_grade = input_data_form["loan_grade"]
-    inv_time_periods = input_data_form["inv_time_periods"]
-    defaults_present = input_data_form["defaults_present"]
+    # defaults_present = input_data_form["defaults_present"]
+    paisa_interest_percent = input_data_form["paisa_interest_percent"]
+
+    # Investment time periods (in years)
+    inv_time_periods_yrs = input_data_form["inv_time_periods_yrs"]
 
     # Platform's revenue percentages
-    current_orig_percent = input_data_form["current_orig_percent"]
-    current_comm_percent = input_data_form["current_comm_percent"]
     paisa_orig_percent = input_data_form["paisa_orig_percent"]
     paisa_comm_percent = input_data_form["paisa_comm_percent"]
 
-    # Reinvestment period
-    emi_reinvest_period = input_data_form["emi_reinvest_period"]
+    # Reinvestment periods
+    paisa_emi_reinvest_period = input_data_form["emi_reinvest_period"]
 
-    # Initial principal
+    # Initial principal stats
     principal = input_data_form["principal"]
-    principal_grow_percent = input_data_form["principal_grow_percent"]
 
     #######################################################################
     # Fixed inputs
+    principal_grow_percent = -100
     # Percent of accumulated EMI reinvested
     emi_reinvest_percent = 100
     # Principal reinvestment percent (for Paisa platform)
@@ -33,49 +265,18 @@ def run_simulation(input_data_form):
 
     #######################################################################
     # Run the code with above inputs
-    # Monthly default rates based on the loan grade
-    if defaults_present:
-        monthly_default = monthly_defaults_3yr(loan_grade)
+    # Annual interest rate - input or take based on the loan grade
+    if paisa_interest_percent:
+        paisa_annual_intr_percent = paisa_interest_percent
     else:
-        # No defaults case - Returns an array with all zeros
-        monthly_default = monthly_defaults_3yr()
+        paisa_annual_intr_percent = annual_interest_3yr(loan_grade)
 
-    # Annual interest rate based on the loan grade
-    annual_intr_percent = annual_interest_3yr(loan_grade)
-
-    # Loop for plots
-    current_abs_return = []
-    current_llr = []
-    current_lrr = []
+    # Loop over the given investment periods
     paisa_abs_return = []
     paisa_abs_return_sec = []
     paisa_llr = []
     paisa_lrr = []
-    for inv_time_period in inv_time_periods:
-        # Current platform
-        (
-            _,
-            current_abs_return_val,
-            current_llr_val,
-            current_lrr_val,
-        ) = current_platform(
-            principal,
-            annual_intr_percent,
-            inv_time_period * 12,
-            principal_grow_percent,
-            emi_reinvest_period,
-            emi_reinvest_percent,
-            current_orig_percent,
-            current_comm_percent,
-            monthly_default,
-        )
-
-        # Append the new values
-        current_abs_return.append(current_abs_return_val)
-        current_llr.append(current_llr_val)
-        current_lrr.append(current_lrr_val)
-
-        # Paisa platform
+    for inv_time_period in inv_time_periods_yrs:
         (
             _,
             paisa_abs_return_val,
@@ -86,15 +287,15 @@ def run_simulation(input_data_form):
             _,
         ) = paisa_platform(
             principal,
-            annual_intr_percent,
+            paisa_annual_intr_percent,
             inv_time_period * 12,
             principal_grow_percent,
-            emi_reinvest_period,
+            paisa_emi_reinvest_period,
             emi_reinvest_percent,
             principal_reinvest_percent,
             paisa_orig_percent,
             paisa_comm_percent,
-            monthly_default,
+            monthly_default_array,
         )
 
         # Append the new values
@@ -103,6 +304,80 @@ def run_simulation(input_data_form):
         paisa_llr.append(paisa_llr_val)
         paisa_lrr.append(paisa_lrr_val)
 
+    # Return the outputs
+    output_data = {}
+
+    output_data["paisa_abs_return"] = paisa_abs_return
+    output_data["paisa_abs_return_sec"] = paisa_abs_return_sec
+    output_data["paisa_llr"] = paisa_llr
+    output_data["paisa_lrr"] = paisa_lrr
+
+    return output_data
+
+
+def current_model(input_data_form, loan_grade, monthly_default_array):
+    # Inputs from the frontend form
+    # Primary inputs
+    # defaults_present = input_data_form["defaults_present"]
+
+    # Investment time periods (in years)
+    inv_time_periods_yrs = input_data_form["inv_time_periods_yrs"]
+
+    # Current platform's revenue percentages
+    current_orig_percent = input_data_form["current_orig_percent"]
+    current_comm_percent = input_data_form["current_comm_percent"]
+
+    # Reinvestment periods
+    current_emi_reinvest_period = input_data_form["emi_reinvest_period"]
+
+    # Initial principal stats
+    principal = input_data_form["principal"]
+
+    #######################################################################
+    # Fixed inputs
+    principal_grow_percent = -100
+    # Percent of accumulated EMI reinvested
+    emi_reinvest_percent = 100
+
+    #######################################################################
+    # Run the code with above inputs
+    # Monthly default rates based on the loan grade
+    # if defaults_present:
+    #     monthly_default_array = monthly_defaults_3yr(loan_grade)
+    # else:
+    #     # No defaults case - Returns an array with all zeros
+    #     monthly_default_array = monthly_defaults_3yr()
+
+    # Annual interest rate - take based on the loan grade
+    current_annual_intr_percent = annual_interest_3yr(loan_grade)
+
+    # Loop over the given investment periods
+    current_abs_return = []
+    current_llr = []
+    current_lrr = []
+    for inv_time_period in inv_time_periods_yrs:
+        (
+            _,
+            current_abs_return_val,
+            current_llr_val,
+            current_lrr_val,
+        ) = current_platform(
+            principal,
+            current_annual_intr_percent,
+            inv_time_period * 12,
+            principal_grow_percent,
+            current_emi_reinvest_period,
+            emi_reinvest_percent,
+            current_orig_percent,
+            current_comm_percent,
+            monthly_default_array,
+        )
+
+        # Append the new values
+        current_abs_return.append(current_abs_return_val)
+        current_llr.append(current_llr_val)
+        current_lrr.append(current_lrr_val)
+
     #######################################################################
     # Return the outputs
     output_data = {}
@@ -110,16 +385,12 @@ def run_simulation(input_data_form):
     output_data["current_abs_return"] = current_abs_return
     output_data["current_llr"] = current_llr
     output_data["current_lrr"] = current_lrr
-    output_data["paisa_abs_return"] = paisa_abs_return
-    output_data["paisa_abs_return_sec"] = paisa_abs_return_sec
-    output_data["paisa_llr"] = paisa_llr
-    output_data["paisa_lrr"] = paisa_lrr
-    
+
     return output_data
 
 
 def annual_interest_3yr(loan_grade):
-    if loan_grade == "ALL":
+    if loan_grade == "MIX":
         annual_interest_percent = 12.32
     elif loan_grade == "A":
         annual_interest_percent = 7.17
@@ -137,7 +408,7 @@ def monthly_defaults_3yr(loan_grade=None):
     if loan_grade is None:
         # No defaults case - Return an array with all zeros
         monthly_defaults_array = np.zeros(37)
-    elif loan_grade == "ALL":
+    elif loan_grade == "MIX":
         monthly_default_percent = [
             99999,
             0.00,
@@ -352,6 +623,221 @@ def monthly_defaults_3yr(loan_grade=None):
     return monthly_defaults_array
 
 
+def monthly_defaults_3yr_mu_sig_z(loan_grade):
+    if loan_grade == "MIX":
+        monthly_default_mean = 0.1861 / 100
+        monthly_default_sigma = 0.1334 / 100
+        monthly_default_zscores = [
+            99999,
+            -1.3949,
+            -1.3949,
+            -1.3949,
+            -1.3949,
+            -0.6454,
+            -0.6454,
+            0.1041,
+            0.1041,
+            0.1041,
+            0.8536,
+            1.6031,
+            0.8536,
+            1.6031,
+            0.8536,
+            1.6031,
+            0.8536,
+            1.6031,
+            0.8536,
+            1.6031,
+            0.8536,
+            0.1041,
+            0.8536,
+            0.1041,
+            0.1041,
+            0.1041,
+            0.1041,
+            0.1041,
+            -0.6454,
+            -0.6454,
+            -0.6454,
+            -0.6454,
+            -0.6454,
+            -1.3949,
+            -0.6454,
+            -1.3949,
+            -1.3949,
+        ]
+    elif loan_grade == "A":
+        monthly_default_mean = 0.0611 / 100
+        monthly_default_sigma = 0.0599 / 100
+        monthly_default_zscores = [
+            99999,
+            -1.0203,
+            -1.0203,
+            -1.0203,
+            -1.0203,
+            -1.0203,
+            -1.0203,
+            0.6493,
+            -1.0203,
+            0.6493,
+            0.6493,
+            0.6493,
+            -1.0203,
+            2.3189,
+            -1.0203,
+            0.6493,
+            0.6493,
+            2.3189,
+            0.6493,
+            0.6493,
+            0.6493,
+            0.6493,
+            0.6493,
+            0.6493,
+            0.6493,
+            0.6493,
+            0.6493,
+            -1.0203,
+            0.6493,
+            -1.0203,
+            0.6493,
+            -1.0203,
+            0.6493,
+            -1.0203,
+            -1.0203,
+            -1.0203,
+            -1.0203,
+        ]
+    elif loan_grade == "B":
+        monthly_default_mean = 0.15 / 100
+        monthly_default_sigma = 0.1056 / 100
+        monthly_default_zscores = [
+            99999,
+            -1.4210,
+            -1.4210,
+            -1.4210,
+            -1.4210,
+            -1.4210,
+            -0.4737,
+            -0.4737,
+            0.4737,
+            0.4737,
+            0.4737,
+            0.4737,
+            0.4737,
+            1.4210,
+            0.4737,
+            1.4210,
+            1.4210,
+            1.4210,
+            1.4210,
+            1.4210,
+            0.4737,
+            0.4737,
+            1.4210,
+            0.4737,
+            0.4737,
+            -0.4737,
+            0.4737,
+            0.4737,
+            -0.4737,
+            -0.4737,
+            -0.4737,
+            -0.4737,
+            -0.4737,
+            -1.4210,
+            -0.4737,
+            -1.4210,
+            -1.4210,
+        ]
+    elif loan_grade == "C":
+        monthly_default_mean = 0.2722 / 100
+        monthly_default_sigma = 0.1994 / 100
+        monthly_default_zscores = [
+            99999,
+            -1.3649,
+            -1.3649,
+            -1.3649,
+            -1.3649,
+            -0.8635,
+            -0.8635,
+            0.1393,
+            0.1393,
+            0.6407,
+            1.1421,
+            0.6407,
+            1.1421,
+            1.6435,
+            1.6435,
+            1.1421,
+            1.6435,
+            1.1421,
+            1.1421,
+            1.1421,
+            0.6407,
+            0.6407,
+            0.6407,
+            0.1393,
+            0.1393,
+            0.1393,
+            -0.3621,
+            -0.3621,
+            -0.3621,
+            -0.3621,
+            -0.8635,
+            -0.8635,
+            -0.8635,
+            -0.8635,
+            -0.8635,
+            -1.3649,
+            -1.3649,
+        ]
+    elif loan_grade == "D":
+        monthly_default_mean = 0.4083 / 100
+        monthly_default_sigma = 0.3065 / 100
+        monthly_default_zscores = [
+            99999,
+            -1.3323,
+            -1.3323,
+            -1.3323,
+            -1.3323,
+            -0.6798,
+            -0.0272,
+            0.2991,
+            0.9517,
+            0.6254,
+            1.2780,
+            1.2780,
+            1.6042,
+            1.9305,
+            0.9517,
+            1.6042,
+            0.9517,
+            1.2780,
+            0.6254,
+            0.9517,
+            0.6254,
+            0.2991,
+            0.2991,
+            -0.0272,
+            -0.3535,
+            -0.0272,
+            -0.3535,
+            -0.3535,
+            -0.6798,
+            -0.6798,
+            -0.6798,
+            -1.0061,
+            -1.0061,
+            -1.0061,
+            -1.0061,
+            -1.3323,
+            -1.0061,
+        ]
+
+    return monthly_default_mean, monthly_default_sigma, monthly_default_zscores
+
+
 def loan_payments(
     principal, annual_intr_percent, duration_months, monthly_defaults_array
 ):
@@ -474,9 +960,12 @@ def current_platform(
         x += 1
 
     # Total money out
-    money_out = np.sum(mtx_emi[:, 0 : stop_month_emi_reinvest + 1]) * (
-        1 - emi_reinvest_percent / 100
-    ) + np.sum(mtx_emi[:, stop_month_emi_reinvest + 1 :])
+    money_out = (
+        np.sum(mtx_emi[:, 0 : stop_month_emi_reinvest + 1])
+        * (1 - emi_reinvest_percent / 100)
+        + np.sum(mtx_emi[:, stop_month_emi_reinvest + 1 :])
+        - np.sum(mtx_interest_paid) * (platform_emi_percent / annual_intr_percent)
+    )
 
     # Average investment time period (in years)
     if emi_reinvest_percent == 0:
@@ -634,7 +1123,7 @@ def paisa_platform(
     money_in = np.sum(mtx_lending[:, 0])
 
     # Calculate the original investment stop month
-    stop_month_money_in = np.max(np.nonzero(mtx_lending[:, 0]))
+    # stop_month_money_in = np.max(np.nonzero(mtx_lending[:, 0]))
 
     # Calculate all the leftover principals
     principal_leftover = mtx_lending[:, 2] / (principal_reinvest_percent / 100)
@@ -659,57 +1148,57 @@ def paisa_platform(
         * (1 - emi_reinvest_percent / 100)
         + np.sum(mtx_emi[:, emi_reinvest_stop_month + 1 :])
         + np.sum(
-            principal_leftover[0 : inv_time_period - (split_month - 1)]
+            principal_leftover[0 : principal_reinvest_stop_month + 1]
             * (1 - principal_reinvest_percent / 100)
         )
-        + np.sum(principal_leftover[inv_time_period - (split_month - 1) :])
-    )
+        + np.sum(principal_leftover[principal_reinvest_stop_month + 1 :])
+    ) - np.sum(mtx_interest_paid) * (platform_emi_percent / annual_intr_percent)
 
-    # Average investment time period (in years)
-    if principal_reinvest_percent <= 0.1:
-        if emi_reinvest_percent == 0:
-            # Average investment time period
-            avg_invest_time_yr = split_month / 12
-        else:
-            weights = mtx_lending[:, 0] / money_in
-            time_periods = np.zeros(stop_month_money_in + 1)
-            time_periods[0] = (
-                max(emi_reinvest_stop_month, principal_reinvest_stop_month)
-                + split_month
-            )
-            for i in range(1, stop_month_money_in + 1):
-                time_periods[i] = time_periods[i - 1] - 1
-                if i > emi_reinvest_stop_month:
-                    time_periods[i] = duration_months
-            # Average investment time period
-            avg_invest_time_yr = (
-                np.sum(weights[0 : stop_month_money_in + 1] * time_periods) / 12
-            )
-    else:
-        weights = mtx_lending[:, 0] / money_in
-        time_periods = np.zeros(stop_month_money_in + 1)
-        for month in range(stop_month_money_in + 1):
-            # Principal component invested period
-            x = 1
-            while True:
-                if (month + x * split_month) > inv_time_period:
-                    time_period_principal = (x - 1) * split_month
-                    break
-                x += 1
-            # EMI component invested period
-            if month < emi_reinvest_stop_month:
-                time_period_emi = emi_reinvest_stop_month + split_month - month
-                # Max of these two periods
-                time_periods[month] = max(time_period_emi, time_period_principal)
-            else:
-                time_periods[month] = time_period_principal
-        # Average investment time period
-        avg_invest_time_yr = (
-            np.sum(weights[0 : stop_month_money_in + 1] * time_periods) / 12
-        )
+    # # Average investment time period (in years)
+    # if principal_reinvest_percent <= 0.1:
+    #     if emi_reinvest_percent == 0:
+    #         # Average investment time period
+    #         avg_invest_time_yr = split_month / 12
+    #     else:
+    #         weights = mtx_lending[:, 0] / money_in
+    #         time_periods = np.zeros(stop_month_money_in + 1)
+    #         time_periods[0] = (
+    #             max(emi_reinvest_stop_month, principal_reinvest_stop_month)
+    #             + split_month
+    #         )
+    #         for i in range(1, stop_month_money_in + 1):
+    #             time_periods[i] = time_periods[i - 1] - 1
+    #             if i > emi_reinvest_stop_month:
+    #                 time_periods[i] = duration_months
+    #         # Average investment time period
+    #         avg_invest_time_yr = (
+    #             np.sum(weights[0 : stop_month_money_in + 1] * time_periods) / 12
+    #         )
+    # else:
+    #     weights = mtx_lending[:, 0] / money_in
+    #     time_periods = np.zeros(stop_month_money_in + 1)
+    #     for month in range(stop_month_money_in + 1):
+    #         # Principal component invested period
+    #         x = 1
+    #         while True:
+    #             if (month + x * split_month) > inv_time_period:
+    #                 time_period_principal = (x - 1) * split_month
+    #                 break
+    #             x += 1
+    #         # EMI component invested period
+    #         if month < emi_reinvest_stop_month:
+    #             time_period_emi = emi_reinvest_stop_month + split_month - month
+    #             # Max of these two periods
+    #             time_periods[month] = max(time_period_emi, time_period_principal)
+    #         else:
+    #             time_periods[month] = time_period_principal
+    #     # Average investment time period
+    #     avg_invest_time_yr = (
+    #         np.sum(weights[0 : stop_month_money_in + 1] * time_periods) / 12
+    #     )
 
-    # Average return per annum (primary)
-    avg_return = ((money_out / money_in) ** (1 / avg_invest_time_yr) - 1) * 100
+    # # Average return per annum (primary)
+    # avg_return = ((money_out / money_in) ** (1 / avg_invest_time_yr) - 1) * 100
 
     # Total absolute return (primary)
     abs_return = ((money_out / money_in) - 1) * 100
@@ -721,7 +1210,9 @@ def paisa_platform(
     money_in_sec = np.sum(principal_leftover)
 
     # Total money out (secondary)
-    money_out_sec = np.sum(mtx_emi_sec)
+    money_out_sec = np.sum(mtx_emi_sec) - np.sum(mtx_interest_paid_sec) * (
+        platform_emi_percent / annual_intr_percent
+    )
 
     # Average return per annum (secondary)
     avg_return_sec = ((money_out_sec / money_in_sec) ** (1 / 1.5) - 1) * 100
@@ -748,7 +1239,7 @@ def paisa_platform(
     # Return the function outputs
     ############################################################################
     return (
-        avg_return,
+        None,
         abs_return,
         avg_return_sec,
         abs_return_sec,
