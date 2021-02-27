@@ -7,11 +7,13 @@ app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 CORS(app)
 
-@app.route('/simulate', methods=['POST'])
+
+@app.route("/simulate", methods=["POST"])
 def run_simulations():
-    formData = request.get_json().get('formData')
+    formData = request.get_json().get("formData")
     simulation_result = api_run_simulation(formData)
     print(formData)
     return jsonify(simulation_result)
+
 
 app.run()
