@@ -139,8 +139,8 @@ function BarCharts({ apiResults }) {
 											currentDataKey={'current_abs_return'}
 											paisaDataKey={'paisa_abs_return_mean'}
 											paisaErrorKey={'paisa_abs_return_std'}
+											grade={grades[index]}
 										/>
-										<div>{grades[index]}</div>
 									</div>
 								)
 							})}
@@ -156,8 +156,8 @@ function BarCharts({ apiResults }) {
 											currentDataKey={'current_lrr'}
 											paisaDataKey={'paisa_lrr_mean'}
 											paisaErrorKey={'paisa_lrr_std'}
+											grade={grades[index]}
 										/>
-										<div>{grades[index]}</div>
 									</div>
 								)
 							})}
@@ -167,14 +167,14 @@ function BarCharts({ apiResults }) {
 					<Flex style={{ justifyContent: 'space-between'}}>
 							{platformEfficiencyGraphs.map((platformEfficiencyGraph, index) => {
 								return (
-									<div style={{ width: '25%'}}>
+									<div style={{ width: '25%', position: 'relative' }}>
 										<PrimaryLenderChart 
 											data={platformEfficiencyGraph}
 											currentDataKey={'current_llr'}
 											paisaDataKey={'paisa_llr_mean'}
 											paisaErrorKey={'paisa_llr_std'}
+											grade={grades[index]}
 										/>
-										<div>{grades[index]}</div>
 									</div>
 								)
 							})}

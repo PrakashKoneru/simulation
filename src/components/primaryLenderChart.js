@@ -23,21 +23,36 @@ import {
 		return null;
 	};
 
-  function PrimaryLenderChart({ data, paisaDataKey, currentDataKey, paisaErrorKey, keyHelper }) {
-		let prevValue;
-		const ticksArray = data.map((each, index) => {
-			let roundedValue = Math.round(((each[paisaErrorKey] + each[paisaDataKey]) + each[currentDataKey]) / 2)
-			if(prevValue === roundedValue) {
-				prevValue = roundedValue = roundedValue + 1;
-			} else {
-				prevValue = roundedValue;
-			}
-			return roundedValue;
-		})
-		const finalTickValue = Math.round(data[4][paisaDataKey] + data[4][paisaErrorKey] + 0.4)
+  function PrimaryLenderChart({ grade, data, paisaDataKey, currentDataKey, paisaErrorKey, keyHelper }) {
+		// let prevValue;
+		// const ticksArray = data.map((each, index) => {
+		// 	let roundedValue = Math.round(((each[paisaErrorKey] + each[paisaDataKey]) + each[currentDataKey]) / 2)
+		// 	if(prevValue === roundedValue) {
+		// 		prevValue = roundedValue = roundedValue + 1;
+		// 	} else {
+		// 		prevValue = roundedValue;
+		// 	}
+		// 	return roundedValue;
+		// })
+		// const finalTickValue = Math.round(data[4][paisaDataKey] + data[4][paisaErrorKey] + 0.4)
 
+		let minValue = data[0][currentDataKey]
+		let maxValue = ([data[4][currentDataKey], data[4][paisaDataKey] + data[4][paisaErrorKey]].sort())[1]
+
+		let tickArrayInterval = (maxValue - minValue) / 5;
+		let tickCountHelper = minValue;
+		let ticksArray = data.map((each) => {
+			tickCountHelper = tickCountHelper + tickArrayInterval;
+			// return (Math.round(tickCountHelper * 10)) / 10
+			return (Math.round(tickCountHelper + 0.4))
+		})
+		console.log('tickArrayInterval: ', tickArrayInterval, "ticksArray: ", ticksArray)
     return(
-			<div key={Math.random()}>
+			<div key={Math.random()}
+				style={{
+					position: 'relative'
+				}}
+			>
 				<LineChart
 					width={420}
 					height={375}
@@ -52,7 +67,7 @@ import {
 					<CartesianGrid strokeDasharray="3 3" />
 					<XAxis dataKey="inv_time_periods_yrs" />
 					<YAxis
-						ticks={[...ticksArray, finalTickValue]}
+						ticks={[Math.round(minValue), ...ticksArray]}
 						interval={0}
 						domain={[dataMin => (Math.round(dataMin - 0.4)), dataMax => (Math.round(dataMax + 0.4))]}
 					/>
@@ -79,6 +94,15 @@ import {
 						/>
 					</Line>
 				</LineChart>
+				<div
+					style={{
+						position: 'absolute',
+						bottom: '60px',
+						left: '185px'
+					}}
+				>
+					{grade}
+				</div>
 			</div>
     )
   };
