@@ -39,11 +39,102 @@ const BoxTitle = styled.div`
   margin-right: 15px;
 `
 
+const defaultFormValues = [
+  {scenario_flag: 1},
+  {
+    scenario_flag: 2,
+    default_flag: 'auto',
+    principal: 14000,
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,        
+    paisa_orig_percent: 2,
+    paisa_comm_percent: 1.5, 
+    paisa_interest_percent: 0
+  },
+  {
+    scenario_flag: 3,
+    default_flag: 'auto',
+    principal: 14000,
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,
+    paisa_orig_percent: 0,
+    paisa_comm_percent: 1.5,
+    paisa_interest_percent: 0
+  },
+  {
+    scenario_flag: 4,
+    principal: 14000,
+    default_flag: 'auto',
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,
+    paisa_orig_percent: 0,
+    paisa_comm_percent: 1.5,
+    paisa_interest_percent: 0
+  },
+]
+
+const disableRules = [
+  {scenario_flag: 1},
+  {
+    scenario_flag: 2,
+    default_flag: 'auto',
+    principal: 14000,
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,        
+    paisa_orig_percent: 2,
+    paisa_comm_percent: 1.5, 
+    paisa_interest_percent: 0
+  },
+  {
+    scenario_flag: 3,
+    default_flag: 'auto',
+    principal: 14000,
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,
+    paisa_orig_percent: 0,
+    paisa_comm_percent: 1.5,
+    paisa_interest_percent: 0
+  },
+  {
+    scenario_flag: 4,
+    principal: 14000,
+    default_flag: 'auto',
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,
+    paisa_orig_percent: 0,
+    paisa_comm_percent: 1.5,
+    paisa_interest_percent: 0
+  },
+]
+
 function App() {
-  const { register, watch, handleSubmit } = useForm();
-  const [apiResults, updateApiResults] = useState(null)
+  const [apiResults, updateApiResults] = useState(null);
+  const [simulationModel, setSimulationModel] = useState(1);
+  const { register, watch, reset, handleSubmit } = useForm();
 
   const defaultSelcted = watch("default_flag");
+  const scenarioSelected = watch("scenario_flag")
+
+  const disableFields = scenarioSelected == 2 || scenarioSelected == 3 || (scenarioSelected == 4 && defaultSelcted === "auto");
+  
 
   const postData = async (data) => {
     axios
@@ -57,7 +148,7 @@ function App() {
       console.log('response: ', response);
       updateApiResults(response.data)
     })
-    return
+    return 
   }
 
   return (
@@ -74,11 +165,14 @@ function App() {
                 register={register({
                   valueAsNumber: true,
                 })}
+                onChange={(e) => {
+                  reset(defaultFormValues[e.target.value - 1])
+                }}
               >
-                <Option value={1}>Category 1</Option>
-                <Option value={2}>Category 2</Option>
-                <Option value={3}>Category 3</Option>
-                <Option value={4}>Category 4</Option>
+                <Option value={1}>No Simulation</Option>
+                <Option value={2}>Simulation Model</Option>
+                <Option value={3}>Borrower Friendly</Option>
+                <Option value={4}>Custom</Option>
               </Select>
             </Flex>
             <Flex style={{ marginTop: '25px' }}>
@@ -91,6 +185,7 @@ function App() {
                       type="radio"
                       ref={register}
                       value="off"
+                      disabled={scenarioSelected != 1}
                     />
                     <label for="off">Off</label>
                   </Flex>
@@ -111,6 +206,7 @@ function App() {
                       type="radio"
                       ref={register}
                       value="custom"
+                      disabled={scenarioSelected != 4}
                     />
                     <label for="custom">
                       {defaultSelcted === 'custom' ? 'Custom (%)' : 'Custom'}
@@ -160,6 +256,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -173,6 +270,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -211,6 +309,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -224,6 +323,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -237,6 +337,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                 </BorderDiv>
@@ -262,6 +363,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -275,6 +377,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -288,6 +391,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginright: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                 </BorderDiv>
