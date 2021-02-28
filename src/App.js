@@ -39,11 +39,102 @@ const BoxTitle = styled.div`
   margin-right: 15px;
 `
 
+const defaultFormValues = [
+  {scenario_flag: 1},
+  {
+    scenario_flag: 2,
+    default_flag: 'auto',
+    principal: 14000,
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,        
+    paisa_orig_percent: 2,
+    paisa_comm_percent: 1.5, 
+    paisa_interest_percent: 0
+  },
+  {
+    scenario_flag: 3,
+    default_flag: 'auto',
+    principal: 14000,
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,
+    paisa_orig_percent: 0,
+    paisa_comm_percent: 1.5,
+    paisa_interest_percent: 0
+  },
+  {
+    scenario_flag: 4,
+    principal: 14000,
+    default_flag: 'auto',
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,
+    paisa_orig_percent: 0,
+    paisa_comm_percent: 1.5,
+    paisa_interest_percent: 0
+  },
+]
+
+const disableRules = [
+  {scenario_flag: 1},
+  {
+    scenario_flag: 2,
+    default_flag: 'auto',
+    principal: 14000,
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,        
+    paisa_orig_percent: 2,
+    paisa_comm_percent: 1.5, 
+    paisa_interest_percent: 0
+  },
+  {
+    scenario_flag: 3,
+    default_flag: 'auto',
+    principal: 14000,
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,
+    paisa_orig_percent: 0,
+    paisa_comm_percent: 1.5,
+    paisa_interest_percent: 0
+  },
+  {
+    scenario_flag: 4,
+    principal: 14000,
+    default_flag: 'custom',
+    emi_reinvest_period: 12,
+    inv_period: '',
+    current_orig_percent: 2,
+    current_comm_percent: 1.5,
+    current_interest_percent: 0,
+    paisa_orig_percent: 0,
+    paisa_comm_percent: 1.5,
+    paisa_interest_percent: 0
+  },
+]
+
 function App() {
-  const { register, watch, handleSubmit } = useForm();
-  const [apiResults, updateApiResults] = useState(null)
+  const [apiResults, updateApiResults] = useState(null);
+  const [simulationModel, setSimulationModel] = useState(1);
+  const { register, watch, reset, handleSubmit } = useForm();
 
   const defaultSelcted = watch("default_flag");
+  const scenarioSelected = watch("scenario_flag")
+
+  const disableFields = scenarioSelected == 2 || scenarioSelected == 3 || (scenarioSelected == 4 && defaultSelcted === "auto");
+  
 
   const postData = async (data) => {
     axios
@@ -57,7 +148,7 @@ function App() {
       console.log('response: ', response);
       updateApiResults(response.data)
     })
-    return
+    return 
   }
 
   return (
@@ -74,23 +165,27 @@ function App() {
                 register={register({
                   valueAsNumber: true,
                 })}
+                onChange={(e) => {
+                  reset(defaultFormValues[e.target.value - 1])
+                }}
               >
-                <Option value={1}>Category 1</Option>
-                <Option value={2}>Category 2</Option>
-                <Option value={3}>Category 3</Option>
-                <Option value={4}>Category 4</Option>
+                <Option value={1}>No Simulation</Option>
+                <Option value={2}>Simulation - Worst Case Scenario</Option>
+                <Option value={3}>Simulation - Competitive Scenario</Option>
+                <Option value={4}>Simulation - Custom</Option>
               </Select>
             </Flex>
             <Flex style={{ marginTop: '25px' }}>
               <div style={{ marginRight: '25px'}}>Defaults</div>
               <div>
-                <Flex style={{ justifyContent: 'space-between' }}>
-                  <Flex style={{ alignItems: 'center', marginRight: '5px' }}>
+                <Flex>
+                  <Flex style={{ alignItems: 'center', marginRight: '15px' }}>
                     <input
                       name="default_flag"
                       type="radio"
                       ref={register}
                       value="off"
+                      disabled={scenarioSelected && scenarioSelected != 1}
                     />
                     <label for="off">Off</label>
                   </Flex>
@@ -100,8 +195,9 @@ function App() {
                       type="radio"
                       value="auto"
                       ref={register}
+                      disabled={scenarioSelected == 4}
                     />
-                    <label for="auto">Auto</label>
+                    <label for="auto">Average</label>
                   </Flex>
                 </Flex>
                 <div style={{ marginTop: '15px', minWidth: '168px' }}>
@@ -111,12 +207,13 @@ function App() {
                       type="radio"
                       ref={register}
                       value="custom"
+                      disabled={scenarioSelected != 4}
                     />
                     <label for="custom">
-                      {defaultSelcted === 'custom' ? 'Custom (%)' : 'Custom'}
+                      {scenarioSelected === 4 ? 'Custom (%)' : 'Custom'}
                     </label>
                   </Flex>
-                  {defaultSelcted === 'custom' && (
+                  {scenarioSelected === 4 && (
                     <Input
                       style={{ 
                         width: '10px !important',
@@ -129,6 +226,18 @@ function App() {
                       placeholder=">= 0"
                     />
                   )}
+                  <div>
+                    {scenarioSelected == 2 && (
+                      <div style={{ padding: '5px', marginTop:'9px'}}>
+                        {`* Paisa's defaults 50% worse than Current Platforms'`}
+                      </div>
+                    )}
+                    {scenarioSelected == 3 && (
+                      <div style={{ padding: '5px', marginTop:'9px'}}>
+                        {`* Paisa's defaults same as Current Platforms'`}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </Flex>
@@ -160,6 +269,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -173,6 +283,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -186,6 +297,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={true}
                     />
                   </div>
                 </BorderDiv>
@@ -211,6 +323,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -224,19 +337,18 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
                     <div style={{ marginBottom: '8px' }}>Interest Rate (%)</div>
                     <Input
                       name="current_interest_percent"
-                      placeholder="> 0"
+                      placeholder="Based on Loan Grade"
                       type='number'
-                      register={register({
-                        valueAsNumber: true,
-                      })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={true}
                     />
                   </div>
                 </BorderDiv>
@@ -262,6 +374,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
@@ -275,19 +388,18 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={disableFields}
                     />
                   </div>
                   <div style={{ marginTop: '15px'}}>
                     <div style={{ marginBottom: '8px' }}>Interest Rate (%)</div>
                     <Input
                       name="paisa_interest_percent"
-                      placeholder="> 0"
+                      placeholder="Same as Current Platform"
                       type='number'
-                      register={register({
-                        valueAsNumber: true,
-                      })}
                       step="any"
                       style={{ width: '200px', marginright: '40px' }}
+                      disabled={true}
                     />
                   </div>
                 </BorderDiv>

@@ -12,7 +12,7 @@ CORS(app)
 def run_simulations():
     formData = request.get_json().get("formData")
     simulation_result = api_run_simulation(formData)
-    print(formData)
+    print(simulation_result)
     return jsonify(simulation_result)
 
 
