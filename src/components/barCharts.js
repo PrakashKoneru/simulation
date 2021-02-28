@@ -66,7 +66,7 @@ function BarCharts({ apiResults }) {
 		<div>
 			<Flex
 				style={{
-					alignItems: 'baseline',
+					alignItems: 'flex-end',
 					padding: '0px 30px',
 					marginTop: '40px'
 				}}
@@ -87,8 +87,8 @@ function BarCharts({ apiResults }) {
 					}}
 				>
 					<form onSubmit={handleSubmit(() => {})}>
-						<Flex style={{ justifyContent: 'space-between' }}>
-							<Flex style={{ alignItems: 'center', marginRight: '5px' }}>
+						<Flex>
+							<Flex style={{ alignItems: 'center', marginRight: '50px' }}>
 								<input
 									name="bargraphs"
 									type="radio"
@@ -99,7 +99,7 @@ function BarCharts({ apiResults }) {
 								/>
 								<label for="lenderReturns">Lender Returns</label>
 							</Flex>
-							<Flex style={{ alignItems: 'center', marginRight: '5px' }}>
+							<Flex style={{ alignItems: 'center', marginRight: '50px' }}>
 								<input
 									name="bargraphs"
 									type="radio"
@@ -125,7 +125,7 @@ function BarCharts({ apiResults }) {
 			</Flex>
 			<div
 				style={{
-					padding: '0px 60px',
+					marginLeft: '-35px',
 					marginTop:' 50px'
 				}}
 			>
