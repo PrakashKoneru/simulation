@@ -138,6 +138,7 @@ function BarCharts({ apiResults }) {
 											data={lenderReturnsGraph}
 											currentDataKey={'current_abs_return'}
 											paisaDataKey={'paisa_abs_return_mean'}
+											paisaErrorKey={'paisa_abs_return_std'}
 										/>
 										<div>{grades[index]}</div>
 									</div>
@@ -154,6 +155,7 @@ function BarCharts({ apiResults }) {
 											data={platformRevenueGraph}
 											currentDataKey={'current_lrr'}
 											paisaDataKey={'paisa_lrr_mean'}
+											paisaErrorKey={'paisa_lrr_std'}
 										/>
 										<div>{grades[index]}</div>
 									</div>
@@ -170,6 +172,7 @@ function BarCharts({ apiResults }) {
 											data={platformEfficiencyGraph}
 											currentDataKey={'current_llr'}
 											paisaDataKey={'paisa_llr_mean'}
+											paisaErrorKey={'paisa_llr_std'}
 										/>
 										<div>{grades[index]}</div>
 									</div>

@@ -113,7 +113,7 @@ const disableRules = [
   {
     scenario_flag: 4,
     principal: 14000,
-    default_flag: 'auto',
+    default_flag: 'custom',
     emi_reinvest_period: 12,
     inv_period: '',
     current_orig_percent: 2,
@@ -170,22 +170,22 @@ function App() {
                 }}
               >
                 <Option value={1}>No Simulation</Option>
-                <Option value={2}>Simulation Model</Option>
-                <Option value={3}>Borrower Friendly</Option>
-                <Option value={4}>Custom</Option>
+                <Option value={2}>Simulation - Worst Case Scenario</Option>
+                <Option value={3}>Simulation - Competitive Scenario</Option>
+                <Option value={4}>Simulation - Custom</Option>
               </Select>
             </Flex>
             <Flex style={{ marginTop: '25px' }}>
               <div style={{ marginRight: '25px'}}>Defaults</div>
               <div>
-                <Flex style={{ justifyContent: 'space-between' }}>
-                  <Flex style={{ alignItems: 'center', marginRight: '5px' }}>
+                <Flex>
+                  <Flex style={{ alignItems: 'center', marginRight: '15px' }}>
                     <input
                       name="default_flag"
                       type="radio"
                       ref={register}
                       value="off"
-                      disabled={scenarioSelected != 1}
+                      disabled={scenarioSelected && scenarioSelected != 1}
                     />
                     <label for="off">Off</label>
                   </Flex>
@@ -195,8 +195,9 @@ function App() {
                       type="radio"
                       value="auto"
                       ref={register}
+                      disabled={scenarioSelected == 4}
                     />
-                    <label for="auto">Auto</label>
+                    <label for="auto">Average</label>
                   </Flex>
                 </Flex>
                 <div style={{ marginTop: '15px', minWidth: '168px' }}>
@@ -209,10 +210,10 @@ function App() {
                       disabled={scenarioSelected != 4}
                     />
                     <label for="custom">
-                      {defaultSelcted === 'custom' ? 'Custom (%)' : 'Custom'}
+                      {scenarioSelected === 4 ? 'Custom (%)' : 'Custom'}
                     </label>
                   </Flex>
-                  {defaultSelcted === 'custom' && (
+                  {scenarioSelected === 4 && (
                     <Input
                       style={{ 
                         width: '10px !important',
@@ -225,6 +226,18 @@ function App() {
                       placeholder=">= 0"
                     />
                   )}
+                  <div>
+                    {scenarioSelected == 2 && (
+                      <div style={{ padding: '5px', marginTop:'9px'}}>
+                        {`* Paisa's defaults 50% worse than Current Platforms'`}
+                      </div>
+                    )}
+                    {scenarioSelected == 3 && (
+                      <div style={{ padding: '5px', marginTop:'9px'}}>
+                        {`* Paisa's defaults same as Current Platforms'`}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </Flex>
@@ -284,6 +297,7 @@ function App() {
                       })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
+                      disabled={true}
                     />
                   </div>
                 </BorderDiv>
@@ -330,14 +344,11 @@ function App() {
                     <div style={{ marginBottom: '8px' }}>Interest Rate (%)</div>
                     <Input
                       name="current_interest_percent"
-                      placeholder="> 0"
+                      placeholder="Based on Loan Grade"
                       type='number'
-                      register={register({
-                        valueAsNumber: true,
-                      })}
                       step="any"
                       style={{ width: '200px', marginRight: '40px' }}
-                      disabled={disableFields}
+                      disabled={true}
                     />
                   </div>
                 </BorderDiv>
@@ -384,14 +395,11 @@ function App() {
                     <div style={{ marginBottom: '8px' }}>Interest Rate (%)</div>
                     <Input
                       name="paisa_interest_percent"
-                      placeholder="> 0"
+                      placeholder="Same as Current Platform"
                       type='number'
-                      register={register({
-                        valueAsNumber: true,
-                      })}
                       step="any"
                       style={{ width: '200px', marginright: '40px' }}
-                      disabled={disableFields}
+                      disabled={true}
                     />
                   </div>
                 </BorderDiv>

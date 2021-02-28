@@ -6,7 +6,8 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    Legend
+	Legend,
+	ErrorBar
 	} from "recharts";
 	
 	const CustomizedLabel = (props) => {
@@ -22,7 +23,7 @@ import {
 		return null;
 	};
 
-  function PrimaryLenderChart({ data, paisaDataKey, currentDataKey }) {
+  function PrimaryLenderChart({ data, paisaDataKey, currentDataKey, paisaErrorKey }) {
     return(
 			<div>
 				<LineChart
@@ -52,7 +53,15 @@ import {
 						label={<CustomizedLabel />}
 						stroke="#8884d8"
 						strokeWidth={2}
-					/>
+					>
+						<ErrorBar
+							dataKey={paisaErrorKey}
+							width={4}
+							strokeWidth={2}
+							stroke="green"
+							direction="y"
+						/>
+					</Line>
 				</LineChart>
 			</div>
     )
