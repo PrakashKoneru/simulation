@@ -74,7 +74,7 @@ def simulation_or_model(input_data_form, loan_grade):
                 paisa_llr_std,
                 paisa_lrr_mean,
                 paisa_lrr_std,
-            ) = run_paisa_simulation(input_data_form, loan_grade)
+            ) = run_paisa_simulation(input_data_form, loan_grade, 10)
 
             # Current platform model results
             current_output_data = current_model(
