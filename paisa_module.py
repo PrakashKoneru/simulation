@@ -75,6 +75,7 @@ def simulation_or_model(input_data_form, loan_grade):
         saved_paisa_output_data = np.load(f"results/s{scenario_flag}_{loan_grade}.npz")
 
         # Run current platform model
+        monthly_default_array = monthly_defaults_3yr(loan_grade)
         current_output_data = current_model(
             input_data_form, loan_grade, monthly_default_array
         )
