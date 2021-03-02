@@ -98,7 +98,8 @@ const defaultFormValues = [
 function App() {
   const [apiResults, updateApiResults] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { register, watch, reset, handleSubmit } = useForm({ defaultValues: defaultFormValues[0]});
+  const [selectedCategory, setSelectedCategory] = useState(1)
+  const { register, watch, reset, handleSubmit, setValue } = useForm({ defaultValues: defaultFormValues[0]});
 
   const defaultSelcted = watch("default_flag");
   const scenarioSelected = watch("scenario_flag")
@@ -107,6 +108,7 @@ function App() {
   
 
   const postData = async (data) => {
+    console.log(data, 'inside post data')
     setLoading(true);
     updateApiResults(null);
     axios
@@ -143,8 +145,11 @@ function App() {
                     valueAsNumber: true,
                   })}
                   onChange={(e) => {
-                    console.log(e.target.value - 1);
-                    reset(defaultFormValues[e.target.value - 1])
+                    updateApiResults(null)
+                    Object.keys(defaultFormValues[e.target.value -1]).map((each) => {
+                      setValue(each, defaultFormValues[e.target.value -1][each])
+                    })
+                    reset(defaultFormValues[e.target.value - 1]);
                   }}
                 >
                   <Option value={1}>No Simulation</Option>
@@ -246,8 +251,12 @@ function App() {
                           valueAsNumber: true,
                         })}
                         step="any"
-                        style={{ width: '200px', marginRight: '40px' }}
-                        disabled={disableFields}
+                        style={{
+                          width: '200px',
+                          marginRight: '40px',
+                          backgroundColor: disableFields ? 'rgba(224,210,210,0.25)' : 'white'
+                        }}
+                        readOnly={disableFields}
                       />
                     </div>
                     <div style={{ marginTop: '15px'}}>
@@ -260,8 +269,12 @@ function App() {
                           valueAsNumber: true,
                         })}
                         step="any"
-                        style={{ width: '200px', marginRight: '40px' }}
-                        disabled={disableFields}
+                        style={{
+                          width: '200px',
+                          marginRight: '40px',
+                          backgroundColor: disableFields ? 'rgba(224,210,210,0.25)' : 'white'
+                        }}
+                        readOnly={disableFields}
                       />
                     </div>
                     <div style={{ marginTop: '15px'}}>
@@ -274,8 +287,12 @@ function App() {
                           valueAsNumber: true,
                         })}
                         step="any"
-                        style={{ width: '200px', marginRight: '40px' }}
-                        disabled={true}
+                        style={{ 
+                          width: '200px',
+                          marginright: '40px',
+                          backgroundColor: 'rgba(224,210,210,0.25)'
+                        }}
+                        readOnly={true}
                       />
                     </div>
                   </BorderDiv>
@@ -300,8 +317,12 @@ function App() {
                           valueAsNumber: true,
                         })}
                         step="any"
-                        style={{ width: '200px', marginRight: '40px' }}
-                        disabled={disableFields}
+                        style={{
+                          width: '200px',
+                          marginRight: '40px',
+                          backgroundColor: disableFields ? 'rgba(224,210,210,0.25)' : 'white'
+                        }}
+                        readOnly={disableFields}
                       />
                     </div>
                     <div style={{ marginTop: '15px'}}>
@@ -314,8 +335,12 @@ function App() {
                           valueAsNumber: true,
                         })}
                         step="any"
-                        style={{ width: '200px', marginRight: '40px' }}
-                        disabled={disableFields}
+                        style={{
+                          width: '200px',
+                          marginRight: '40px',
+                          backgroundColor: disableFields ? 'rgba(224,210,210,0.25)' : 'white'
+                        }}
+                        readOnly={disableFields}
                       />
                     </div>
                     <div style={{ marginTop: '15px'}}>
@@ -325,8 +350,12 @@ function App() {
                         placeholder="Based on Loan Grade"
                         type='number'
                         step="any"
-                        style={{ width: '200px', marginRight: '40px' }}
-                        disabled={true}
+                        style={{ 
+                          width: '200px',
+                          marginright: '40px',
+                          backgroundColor: 'rgba(224,210,210,0.25)'
+                        }}
+                        readOnly={true}
                       />
                     </div>
                   </BorderDiv>
@@ -351,8 +380,12 @@ function App() {
                           valueAsNumber: true,
                         })}
                         step="any"
-                        style={{ width: '200px', marginRight: '40px' }}
-                        disabled={disableFields}
+                        style={{
+                          width: '200px',
+                          marginRight: '40px',
+                          backgroundColor: disableFields ? 'rgba(224,210,210,0.25)' : 'white'
+                        }}
+                        readOnly={disableFields}
                       />
                     </div>
                     <div style={{ marginTop: '15px'}}>
@@ -365,8 +398,12 @@ function App() {
                           valueAsNumber: true,
                         })}
                         step="any"
-                        style={{ width: '200px', marginRight: '40px' }}
-                        disabled={disableFields}
+                        style={{
+                          width: '200px',
+                          marginRight: '40px',
+                          backgroundColor: disableFields ? 'rgba(224,210,210,0.25)' : 'white'
+                        }}
+                        readOnly={disableFields}
                       />
                     </div>
                     <div style={{ marginTop: '15px'}}>
@@ -376,8 +413,12 @@ function App() {
                         placeholder="Same as Current Platform"
                         type='number'
                         step="any"
-                        style={{ width: '200px', marginright: '40px' }}
-                        disabled={true}
+                        style={{ 
+                          width: '200px',
+                          marginright: '40px',
+                          backgroundColor: 'rgba(224,210,210,0.25)'
+                        }}
+                        readOnly={true}
                       />
                     </div>
                   </BorderDiv>

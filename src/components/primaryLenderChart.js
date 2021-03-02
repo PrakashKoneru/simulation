@@ -48,7 +48,8 @@ import {
 		})
 		console.log('tickArrayInterval: ', tickArrayInterval, "ticksArray: ", ticksArray)
     return(
-			<div key={Math.random()}
+			<div
+				key={Math.random()}
 				style={{
 					position: 'relative'
 				}}
