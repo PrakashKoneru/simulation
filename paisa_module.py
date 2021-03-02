@@ -85,14 +85,18 @@ def simulation_or_model(input_data_form, loan_grade):
         # Paisa outputs
         output_data["paisa_abs_return_mean"] = saved_paisa_output_data[
             "paisa_abs_return_mean"
-        ]
+        ].tolist()
         output_data["paisa_abs_return_std"] = saved_paisa_output_data[
             "paisa_abs_return_std"
-        ]
-        output_data["paisa_llr_mean"] = saved_paisa_output_data["paisa_llr_mean"]
-        output_data["paisa_llr_std"] = saved_paisa_output_data["paisa_llr_std"]
-        output_data["paisa_lrr_mean"] = saved_paisa_output_data["paisa_lrr_mean"]
-        output_data["paisa_lrr_std"] = saved_paisa_output_data["paisa_lrr_std"]
+        ].tolist()
+        output_data["paisa_llr_mean"] = saved_paisa_output_data[
+            "paisa_llr_mean"
+        ].tolist()
+        output_data["paisa_llr_std"] = saved_paisa_output_data["paisa_llr_std"].tolist()
+        output_data["paisa_lrr_mean"] = saved_paisa_output_data[
+            "paisa_lrr_mean"
+        ].tolist()
+        output_data["paisa_lrr_std"] = saved_paisa_output_data["paisa_lrr_std"].tolist()
         # Current outputs
         output_data["current_abs_return"] = current_output_data["current_abs_return"]
         output_data["current_llr"] = current_output_data["current_llr"]
