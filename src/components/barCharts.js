@@ -97,7 +97,7 @@ function BarCharts({ apiResults }) {
 									onClick={(e) => { updateSelectedKpi(e.target.value) }}
 									checked={selectedKpi === 'lenderReturns'}
 								/>
-								<label for="lenderReturns">Lender Returns</label>
+								<label for="lenderReturns">Lender Returns (%)</label>
 							</Flex>
 							<Flex style={{ alignItems: 'center', marginRight: '50px' }}>
 								<input
@@ -107,7 +107,7 @@ function BarCharts({ apiResults }) {
 									ref={register}
 									onClick={(e) => { updateSelectedKpi(e.target.value) }}
 								/>
-								<label for="platformRevenue">Platform Revenue</label>
+								<label for="platformRevenue">Platform Revenue (%)</label>
 							</Flex>
 							<Flex style={{ alignItems: 'center', marginRight: '5px' }}>
 								<input
@@ -117,7 +117,7 @@ function BarCharts({ apiResults }) {
 									ref={register}
 									onClick={(e) => { updateSelectedKpi(e.target.value) }}
 								/>
-								<label for="platformEfficiency">Platform Efficiency</label>
+								<label for="platformEfficiency">Platform Efficiency (Ratio)</label>
 							</Flex>
 						</Flex>
 					</form>
