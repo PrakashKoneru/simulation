@@ -16,6 +16,12 @@ def api_run_simulation(input_data_form):
         output_data_C = simulation_or_model(input_data_form, "C")
         output_data_D = simulation_or_model(input_data_form, "D")
 
+        # Round the output data values
+        output_data_A = round_output_data(output_data_A, 2)
+        output_data_B = round_output_data(output_data_B, 2)
+        output_data_C = round_output_data(output_data_C, 2)
+        output_data_D = round_output_data(output_data_D, 2)
+
         # Return the outputs
         output_data = {}
         output_data["output_data_A"] = output_data_A
@@ -30,6 +36,14 @@ def api_run_simulation(input_data_form):
 
         # Return the outputs
         return output_data
+
+
+def round_output_data(output_data, num_decimals):
+    # Round the output data dict to a given number of decimals
+    for key in output_data:
+        output_data[key] = [round(number, num_decimals) for number in output_data[key]]
+
+    return output_data
 
 
 def simulation_or_model(input_data_form, loan_grade):
