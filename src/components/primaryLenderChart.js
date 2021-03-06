@@ -23,6 +23,39 @@ import {
 		return null;
 	};
 
+	const CustomTooltip = ({ active, payload, label }) => {
+		if (active && payload && payload.length) {
+		  return (
+			<div className="custom-tooltip"
+				style={{
+					background: 'white',
+					padding: '3px 10px',
+					border: '1px solid #8884d8'
+				}}
+			>
+				<p
+					className="label"
+					style= {{
+						color: '#8884d8'
+					}}
+				>
+					{`Paisa : ${payload[1].value}`}
+				</p>
+			  <p
+					className="label"
+					style= {{
+						color: '#82ca9d',
+						marginTop: '-3px'
+					}}
+				>
+					{`Current : ${payload[0].value}`}
+				</p>
+			</div>
+		  );
+		}
+		return null;
+	  };
+
   function PrimaryLenderChart({ grade, data, paisaDataKey, currentDataKey, paisaErrorKey, keyHelper }) {
 		// let prevValue;
 		// const ticksArray = data.map((each, index) => {
@@ -67,10 +100,9 @@ import {
 				>
 					<CartesianGrid strokeDasharray="3 3" />
 					<Tooltip
-						formatter={(value, name, props) => ([Math.round(value * 100) / 100, "Current",])}
-					/>
-					<Tooltip
-						formatter={(value, name, props) => ([Math.round(value * 100) / 100, "Paisa"])}
+						label="Important"
+						labelFormatter={(name) => "Text: " + name}
+						content={<CustomTooltip />}
 					/>
 					<XAxis dataKey="inv_time_periods_yrs" />
 					<YAxis
