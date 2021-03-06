@@ -88,22 +88,27 @@ import {
 				}}
 			>
 				<LineChart
-					width={420}
-					height={375}
+					width={325}
+					height={325}
 					data={data}
 					margin={{
 						top: 50,
-						right: 70,
+						right: 20,
 						left: 20,
 						bottom: 75
 					}}
 				>
 					<CartesianGrid strokeDasharray="3 3" />
+<<<<<<< HEAD
 					<Tooltip
 						label="Important"
 						labelFormatter={(name) => "Text: " + name}
 						content={<CustomTooltip />}
 					/>
+=======
+					<Tooltip />
+					
+>>>>>>> 128a605551cb29ba46358b730f42c3bc9a9952c4
 					<XAxis dataKey="inv_time_periods_yrs" />
 					<YAxis
 						ticks={[Math.round(minValue), ...ticksArray]}
