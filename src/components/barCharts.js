@@ -68,7 +68,6 @@ function BarCharts({ apiResults }) {
 				style={{
 					alignItems: 'flex-end',
 					padding: '0px 30px',
-					marginTop: '40px'
 				}}
 			>
 				<div
@@ -97,7 +96,7 @@ function BarCharts({ apiResults }) {
 									onClick={(e) => { updateSelectedKpi(e.target.value) }}
 									checked={selectedKpi === 'lenderReturns'}
 								/>
-								<label for="lenderReturns">Lender Returns (%)</label>
+								<label for="lenderReturns">Lender Abs. Return (%)</label>
 							</Flex>
 							<Flex style={{ alignItems: 'center', marginRight: '50px' }}>
 								<input
@@ -126,7 +125,8 @@ function BarCharts({ apiResults }) {
 			<div
 				style={{
 					marginLeft: '-35px',
-					marginTop:' 50px'
+					marginTop:' 50px',
+					minHeight: "350px"
 				}}
 			>
 				{selectedKpi === 'lenderReturns' && apiResults && lenderReturnsGraphs && (

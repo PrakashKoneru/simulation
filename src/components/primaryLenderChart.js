@@ -66,19 +66,25 @@ import {
 					}}
 				>
 					<CartesianGrid strokeDasharray="3 3" />
+					<Tooltip
+						formatter={(value, name, props) => ([Math.round(value * 100) / 100, "Current",])}
+					/>
+					<Tooltip
+						formatter={(value, name, props) => ([Math.round(value * 100) / 100, "Paisa"])}
+					/>
 					<XAxis dataKey="inv_time_periods_yrs" />
 					<YAxis
 						ticks={[Math.round(minValue), ...ticksArray]}
 						interval={0}
 						domain={[dataMin => (Math.round(dataMin - 0.4)), dataMax => (Math.round(dataMax + 0.4))]}
 					/>
-					<Tooltip />
 					<Line
 						type="monotone"
 						dataKey={currentDataKey}
 						stroke="#82ca9d"
 						activeDot={{ r: 8 }}
-					/>
+					>
+					</Line>
 					<Line
 						type="monotone"
 						dataKey={paisaDataKey}

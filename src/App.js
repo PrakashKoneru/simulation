@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useForm } from "react-hook-form";
 import styled from 'styled-components';
@@ -94,21 +94,17 @@ const defaultFormValues = [
   },
 ]
 
-
 function App() {
   const [apiResults, updateApiResults] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(1)
   const { register, watch, reset, handleSubmit, setValue } = useForm({ defaultValues: defaultFormValues[0]});
 
   const defaultSelcted = watch("default_flag");
   const scenarioSelected = watch("scenario_flag")
 
   const disableFields = scenarioSelected == 2 || scenarioSelected == 3 || (scenarioSelected == 4 && defaultSelcted === "auto");
-  
 
   const postData = async (data) => {
-    console.log(data, 'inside post data')
     setLoading(true);
     updateApiResults(null);
     axios
@@ -123,6 +119,13 @@ function App() {
     .then((response) => {
       updateApiResults(response.data)
       setLoading(false);
+      // setFixFormPosition(true)
+      const el = document.querySelector('#graphs')
+      // window.scroll(0, el.offsetTop - 15);
+      window.scrollTo({
+        top: el.offsetTop - 15,
+        behavior: 'smooth'
+      });
     })
     return 
   }
@@ -135,7 +138,7 @@ function App() {
       <div>
         <BlockDiagrams />
         <form onSubmit={handleSubmit(postData)} autocomplete="on">
-          <Flex style={{ padding: '0px 30px', marginTop: '40px'}}>
+          <Flex style={{ padding: '0px 30px', marginTop: '40px'}} id="graphs">
             <div style={{ width: '30%', padding: '0px 30px' }}>
               <Flex style={{ alignItems: 'baseline'}}>
                 <div style={{ marginRight: '25px'}}>Scenario</div>
@@ -153,7 +156,7 @@ function App() {
                   }}
                 >
                   <Option value={1}>No Simulation</Option>
-                  <Option value={2}>Simulation - Worst Case Scenario</Option>
+                  <Option value={2}>Simulation - Breaking Point Scenario</Option>
                   <Option value={3}>Simulation - Competitive Scenario</Option>
                   <Option value={4}>Simulation - Custom</Option>
                 </Select>
@@ -277,7 +280,7 @@ function App() {
                         readOnly={disableFields}
                       />
                     </div>
-                    <div style={{ marginTop: '15px'}}>
+                    {/* <div style={{ marginTop: '15px'}}>
                       <div style={{ marginBottom: '8px' }}>Investment Period (Yrs.)</div>
                       <Input
                         name="inv_period"
@@ -294,7 +297,7 @@ function App() {
                         }}
                         readOnly={true}
                       />
-                    </div>
+                    </div> */}
                   </BorderDiv>
                 </div>
                 <div>
@@ -308,7 +311,7 @@ function App() {
                   </BoxTitle>
                   <BorderDiv>
                     <div>
-                      <div style={{ marginBottom: '8px' }}>Origination (%)</div>
+                      <div style={{ marginBottom: '8px' }}>Borrower Origination (%)</div>
                       <Input
                         name="current_orig_percent"
                         placeholder=">= 0"
@@ -326,7 +329,7 @@ function App() {
                       />
                     </div>
                     <div style={{ marginTop: '15px'}}>
-                      <div style={{ marginBottom: '8px' }}>Commission (%)</div>
+                      <div style={{ marginBottom: '8px' }}>Lender Commission (%)</div>
                       <Input
                         name="current_comm_percent"
                         placeholder=">= 0"
@@ -343,7 +346,7 @@ function App() {
                         readOnly={disableFields}
                       />
                     </div>
-                    <div style={{ marginTop: '15px'}}>
+                    {/* <div style={{ marginTop: '15px'}}>
                       <div style={{ marginBottom: '8px' }}>Interest Rate (%)</div>
                       <Input
                         name="current_interest_percent"
@@ -357,7 +360,7 @@ function App() {
                         }}
                         readOnly={true}
                       />
-                    </div>
+                    </div> */}
                   </BorderDiv>
                 </div>
                 <div>
@@ -371,7 +374,7 @@ function App() {
                 </BoxTitle>
                   <BorderDiv>
                     <div>
-                      <div style={{ marginBottom: '8px' }}>Origination (%)</div>
+                      <div style={{ marginBottom: '8px' }}>Borrower Origination (%)</div>
                       <Input
                         name="paisa_orig_percent"
                         placeholder=">= 0"
@@ -389,7 +392,7 @@ function App() {
                       />
                     </div>
                     <div style={{ marginTop: '15px'}}>
-                      <div style={{ marginBottom: '8px' }}>Commission (%)</div>
+                      <div style={{ marginBottom: '8px' }}>Lender/Partner Commission (%)</div>
                       <Input
                         name="paisa_comm_percent"
                         placeholder=">= 0"
@@ -406,7 +409,7 @@ function App() {
                         readOnly={disableFields}
                       />
                     </div>
-                    <div style={{ marginTop: '15px'}}>
+                    {/* <div style={{ marginTop: '15px'}}>
                       <div style={{ marginBottom: '8px' }}>Interest Rate (%)</div>
                       <Input
                         name="paisa_interest_percent"
@@ -420,7 +423,7 @@ function App() {
                         }}
                         readOnly={true}
                       />
-                    </div>
+                    </div> */}
                   </BorderDiv>
                   <Flex
                     style = {{
