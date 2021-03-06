@@ -55,23 +55,19 @@ import {
 				}}
 			>
 				<LineChart
-					width={420}
-					height={375}
+					width={325}
+					height={325}
 					data={data}
 					margin={{
 						top: 50,
-						right: 70,
+						right: 20,
 						left: 20,
 						bottom: 75
 					}}
 				>
 					<CartesianGrid strokeDasharray="3 3" />
-					<Tooltip
-						formatter={(value, name, props) => ([Math.round(value * 100) / 100, "Current",])}
-					/>
-					<Tooltip
-						formatter={(value, name, props) => ([Math.round(value * 100) / 100, "Paisa"])}
-					/>
+					<Tooltip />
+					
 					<XAxis dataKey="inv_time_periods_yrs" />
 					<YAxis
 						ticks={[Math.round(minValue), ...ticksArray]}
