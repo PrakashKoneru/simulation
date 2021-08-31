@@ -17,7 +17,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "react-scripts start && python application.py",
     "startPython": "python application.py",
     "build": "react-scripts build",
     "test": "react-scripts test",

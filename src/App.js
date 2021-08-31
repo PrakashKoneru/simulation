@@ -136,7 +136,7 @@ function App() {
         <Header />
       </div>
       <div>
-        <BlockDiagrams />
+        {/* <BlockDiagrams /> */}
         <form onSubmit={handleSubmit(postData)} autocomplete="on">
           <Flex style={{ padding: '0px 30px', marginTop: '40px'}} id="graphs">
             <div style={{ width: '30%', padding: '0px 30px' }}>
