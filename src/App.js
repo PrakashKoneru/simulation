@@ -108,7 +108,7 @@ function App() {
     setLoading(true);
     updateApiResults(null);
     axios
-    .post('http://127.0.0.1:5000/simulate', {
+    .post('https://paisa-api.onrender.com/simulate', {
       formData: {
         inv_time_periods_yrs: [3, 4, 5, 6, 7],
         current_interest_percent: 0,
